@@ -26,7 +26,7 @@ def clean_data(original_data):
     # TODO: Add other filtering
     return filtered_data
 
-def read_var(fname):
+def read_var(fname='variable.txt'):
     '''This function reads the variable description from the given text file for our dataset. The text in the file 
     should have the first word as the variable name and the following words as the description of the variable.
     input:
@@ -50,7 +50,7 @@ def data_descrip(data):
     output:
     data key description
     '''
-    assert isinstance(data, pandas.core.series.Series),"the data is not in pandas dataframe format"
+    assert isinstance(data, pd.core.series.Series),"the data is not in pandas dataframe format"
     feature = read_var("variable.txt")
     return feature[data.name]
     
@@ -62,6 +62,13 @@ def get_training_set():
     """
     return clean_data(load_csv('train.csv'))
 
+
+def get_test_set():
+    """
+    Load test.csv and clean it
+    :return: Cleaned train.csv pandas DataFrame
+    """
+    return clean_data(load_csv('test.csv'))
 
 if __name__ == '__main__':
     data = get_training_set()
