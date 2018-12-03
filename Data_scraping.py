@@ -6,7 +6,7 @@ from collections import Counter
 
 class string(str):
     def translate(self):
-        '''This method adds to the translation to the default string objects in python
+        '''This method translation to the default string objects in python
         input:
         string object in any language
         output:
@@ -14,7 +14,7 @@ class string(str):
         '''
         assert isinstance(self,str)
         translator=gt()
-        return translator.translate(self,dest=en).text
+        return translator.translate(self,dest='en').text
 def web_search(Topic,word,n):
     '''This function searches google to check the web for word frequencies in most ranked articles 
     input:
