@@ -60,7 +60,8 @@ def get_training_set():
     Load training.csv and clean it
     :return: Cleaned train.csv pandas DataFrame
     """
-    return clean_data(load_csv('train.csv'))
+    import os
+    return clean_data(load_csv(os.getcwd() + '/datasets/train.csv'))
 
 
 def get_test_set():
@@ -68,7 +69,8 @@ def get_test_set():
     Load test.csv and clean it
     :return: Cleaned train.csv pandas DataFrame
     """
-    return clean_data(load_csv('test.csv'))
+    import os
+    return clean_data(load_csv(os.getcwd() + '/datasets/test.csv'))
 
 if __name__ == '__main__':
     data = get_training_set()
