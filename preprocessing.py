@@ -144,7 +144,7 @@ class INECDataSet:
             year_df['Category'] = year_df['Category'].apply(lambda x: self.category_translation[x])
             year_df['year'] = year
             self.df = self.df.append(year_df)
-        self.df = self.df.reset_index()
+        self.df = self.df.reset_index().drop('index', axis=1)
 
     def process_poverty_level(self, dataset_path):
         """
@@ -178,7 +178,7 @@ class INECDataSet:
                 dict(zip(list(year_df.columns), EDU_COLS)), axis=1)
             year_df['year'] = year
             self.df = self.df.append(year_df)
-        self.df = self.df.reset_index()
+        self.df = self.df.reset_index().drop('index', axis=1)
 
     def get_dataset_description(self):
         """Returns data set description for the instance data set"""
