@@ -3,8 +3,10 @@ import pandas as pd
 from Data_scraping import *
 
 # INEC Data set constants
-DATA_SET_PATHS = {'household_characteristics': os.getcwd() + '/datasets/household_characteristics_2010_2017.xls',
-                  'poverty_level_stat': os.getcwd() + '/datasets/poverty_level_by_zone_2010_2017'}
+DATA_SET_FOLDER = os.getcwd() + '/datasets/'
+DATA_SET_PATHS = {'household_characteristics': DATA_SET_FOLDER + 'household_characteristics_2010_2017.xls',
+                  'poverty_level_stat': DATA_SET_FOLDER + 'poverty_level_by_zone_2010_2017.xls',
+                  'edu': [DATA_SET_FOLDER + 'edu_' + str(year) + '.xlsx' for year in range(2010, 2018)]}
 
 HOUSEHOLD_CHAR_COLS = {'Cuadro 2': 'Category', 'Unnamed: 2': 'Total', 'Unnamed: 3': 'Quintil 1',
                        'Unnamed: 4': 'Quintil 2', 'Unnamed: 5': 'Quintil 3', 'Unnamed: 6': 'Quintil 4',
@@ -105,14 +107,16 @@ class INECDataSet:
             self.process_household_characteristics(DATA_SET_PATHS['household_characteristics'])
         elif dataset == 'poverty_level_stat':
             self.process_poverty_level(DATA_SET_PATHS['poverty_level_stat'])
+        elif dataset == 'edu':
+            self.process_edu(DATA_SET_PATHS['edu'])
 
     def process_household_characteristics(self, dataset_path):
         """
         Load and process the household characteristics data set
         :param dataset_path: Path to the data set
         :type dataset_path: str
-        :return: Processed Pandas DataFrame
         """
+        assert isinstance(dataset_path, str)
         assert os.path.exists(dataset_path), '{dataset_path} does not exist!'
         self.df = pd.read_excel(dataset_path).rename(HOUSEHOLD_CHAR_COLS, axis=1)  # Read xls data set and rename cols
         self.description = string(self.df['Category'][1:7].str.cat(sep='\n')).translate()
@@ -143,10 +147,26 @@ class INECDataSet:
         Load and process the poverty level data set
         :param dataset_path: Path to the data set
         :param dataset_path: str
-        :return: Processed Pandas DataFrame
         """
+        assert isinstance(dataset_path, str)
         assert os.path.exists(dataset_path), '{dataset_path} does not exist!'
         raise NotImplementedError()
+
+    def process_edu(self, dataset_path_list):
+        """
+        Load and process the list of education data set
+        :param dataset_path_list: List of path to every education data set
+        :type dataset_path_list: list of str
+        """
+        year_dict = dict()
+        assert all([os.path.exists(dataset_path) for dataset_path in dataset_path_list])
+        for file_path, year in zip(dataset_path_list[:-2], range(2010, 2016)):
+            year_dict[year] = pd.read_excel(file_path)
+        year_dict[2016] = pd.read_excel(pd.ExcelFile(dataset_path_list[-2]), 0)  # Read only the table we want
+        year_dict[2017] = pd.read_excel(pd.ExcelFile(dataset_path_list[-1]), 'Cuadro 5')
+
+        # TODO: Process data
+        self.df = year_dict  # For dev, TODO: Change to processed DataFrame
 
     def get_dataset_description(self):
         """Returns data set description for the instance data set"""
