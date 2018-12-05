@@ -144,7 +144,7 @@ class INECDataSet:
             year_df['Category'] = year_df['Category'].apply(lambda x: self.category_translation[x])
             year_df['year'] = year
             self.df = self.df.append(year_df)
-        self.df = self.df.reset_index().drop('index', axis=1)
+        self.df = self.df.reset_index(drop=True)
 
     def process_poverty_level(self, dataset_path):
         """
@@ -178,7 +178,9 @@ class INECDataSet:
                 dict(zip(list(year_df.columns), EDU_COLS)), axis=1)
             year_df['year'] = year
             self.df = self.df.append(year_df)
-        self.df = self.df.reset_index().drop('index', axis=1)
+        self.df = self.df.reset_index(drop=True)
+        self.df['region'] = self.df['region'].apply(lambda x: x.lstrip())  # Kill extra space in region
+        self.df['region'][self.df['region'] == 'Huetar Caribe'] = 'Huetar Atlántica'  # Correct old region name
 
     def get_dataset_description(self):
         """Returns data set description for the instance data set"""
