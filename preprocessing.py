@@ -11,7 +11,10 @@ DATA_SET_PATHS = {'household_characteristics': DATA_SET_FOLDER + 'household_char
 HOUSEHOLD_CHAR_COLS = {'Cuadro 2': 'Category', 'Unnamed: 2': 'Total', 'Unnamed: 3': 'Quintil 1',
                        'Unnamed: 4': 'Quintil 2', 'Unnamed: 5': 'Quintil 3', 'Unnamed: 6': 'Quintil 4',
                        'Unnamed: 7': 'Quintil 5'}
-
+EDU_COLS = ['region', '5-24 total', '5-24 not attend%', '5-24 attend%',
+            '5-12 total', '5-12 not attend%', '5-12 attend%',
+            '13-17 total', '13-17 not attend%', '13-17 attend%',
+            '18-24 total', '18-24 not attend%', '18-24 attend%']
 REGIONS = ['Central', 'Chorotega', 'Pacífico Central', 'Brunca', 'Huetar Atlántica', 'Huetar Norte']
 
 
@@ -59,13 +62,13 @@ def read_var(fname='variable.txt'):
 
 
 def data_descrip(data):
-    '''
+    """
     This function gives the column descriptions of the training data given
     input:
-    data--> data as panda dataframe
+    data--> data as panda DataFrame
     output:
     data key description
-    '''
+    """
     assert isinstance(data, pd.core.series.Series), "the data is not in pandas dataframe format"
     feature = read_var("variable.txt")
     return feature[data.name]
@@ -141,6 +144,7 @@ class INECDataSet:
             year_df['Category'] = year_df['Category'].apply(lambda x: self.category_translation[x])
             year_df['year'] = year
             self.df = self.df.append(year_df)
+        self.df = self.df.reset_index()
 
     def process_poverty_level(self, dataset_path):
         """
@@ -164,9 +168,17 @@ class INECDataSet:
             year_dict[year] = pd.read_excel(file_path)
         year_dict[2016] = pd.read_excel(pd.ExcelFile(dataset_path_list[-2]), 0)  # Read only the table we want
         year_dict[2017] = pd.read_excel(pd.ExcelFile(dataset_path_list[-1]), 'Cuadro 5')
-
-        # TODO: Process data
-        self.df = year_dict  # For dev, TODO: Change to processed DataFrame
+        # Obtain data set description
+        self.description = string(year_dict[2015].iloc[:3, 1].str.cat(sep='\n')).translate()
+        # Append each of the processed year DataFrame
+        self.df = pd.DataFrame()
+        for year, year_df in year_dict.items():
+            year_df = year_df.drop('Unnamed: 0', axis=1).dropna()
+            year_df = year_df.rename(
+                dict(zip(list(year_df.columns), EDU_COLS)), axis=1)
+            year_df['year'] = year
+            self.df = self.df.append(year_df)
+        self.df = self.df.reset_index()
 
     def get_dataset_description(self):
         """Returns data set description for the instance data set"""
