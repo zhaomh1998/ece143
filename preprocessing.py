@@ -6,15 +6,22 @@ from Data_scraping import *
 DATA_SET_FOLDER = os.getcwd() + '/datasets/'
 DATA_SET_PATHS = {'household_characteristics': DATA_SET_FOLDER + 'household_characteristics_2010_2017.xls',
                   'poverty_level_stat': DATA_SET_FOLDER + 'poverty_level_by_zone_2010_2017.xls',
-                  'edu': [DATA_SET_FOLDER + 'edu_' + str(year) + '.xlsx' for year in range(2010, 2018)]}
+                  'edu': [DATA_SET_FOLDER + 'edu_' + str(year) + '.xlsx' for year in range(2010, 2018)],
+                  'edu_lvl': [DATA_SET_FOLDER + 'edu_lvl_' + str(year) + '.xlsx' for year in range(2010, 2018)]}
 
 HOUSEHOLD_CHAR_COLS = {'Cuadro 2': 'Category', 'Unnamed: 2': 'Total', 'Unnamed: 3': 'Quintil 1',
                        'Unnamed: 4': 'Quintil 2', 'Unnamed: 5': 'Quintil 3', 'Unnamed: 6': 'Quintil 4',
                        'Unnamed: 7': 'Quintil 5'}
+
 EDU_COLS = ['region', '5-24 total', '5-24 not attend%', '5-24 attend%',
             '5-12 total', '5-12 not attend%', '5-12 attend%',
             '13-17 total', '13-17 not attend%', '13-17 attend%',
             '18-24 total', '18-24 not attend%', '18-24 attend%']
+
+EDU_LVL_COLS = ['region', 'total', 'no education', 'incomplete primary', 'complete primary',
+                'secondary incomplete', 'secondary complete', 'technical secondary incomplete',
+                'technical secondary complete', 'undergraduate', 'postgraduate', 'no response']
+
 REGIONS = ['Central', 'Chorotega', 'Pacífico Central', 'Brunca', 'Huetar Atlántica', 'Huetar Norte']
 
 
@@ -112,10 +119,12 @@ class INECDataSet:
             self.process_poverty_level(DATA_SET_PATHS['poverty_level_stat'])
         elif dataset == 'edu':
             self.process_edu(DATA_SET_PATHS['edu'])
+        elif dataset == 'edu_lvl':
+            self.process_edu_lvl(DATA_SET_PATHS['edu_lvl'])
 
     def process_household_characteristics(self, dataset_path):
         """
-        Load and process the household characteristics data set
+        Load and process the household characteristics data set, and save in self.df
         :param dataset_path: Path to the data set
         :type dataset_path: str
         """
@@ -148,7 +157,7 @@ class INECDataSet:
 
     def process_poverty_level(self, dataset_path):
         """
-        Load and process the poverty level data set
+        Load and process the poverty level data set, and save in self.df
         :param dataset_path: Path to the data set
         :param dataset_path: str
         """
@@ -158,7 +167,7 @@ class INECDataSet:
 
     def process_edu(self, dataset_path_list):
         """
-        Load and process the list of education data set
+        Load and process the list of education data set, and save in self.df
         :param dataset_path_list: List of path to every education data set
         :type dataset_path_list: list of str
         """
@@ -166,7 +175,7 @@ class INECDataSet:
         assert all([os.path.exists(dataset_path) for dataset_path in dataset_path_list])
         for file_path, year in zip(dataset_path_list[:-2], range(2010, 2016)):
             year_dict[year] = pd.read_excel(file_path)
-        year_dict[2016] = pd.read_excel(pd.ExcelFile(dataset_path_list[-2]), 0)  # Read only the table we want
+        year_dict[2016] = pd.read_excel(pd.ExcelFile(dataset_path_list[-2]), 0)  # Read in corresponding table
         year_dict[2017] = pd.read_excel(pd.ExcelFile(dataset_path_list[-1]), 'Cuadro 5')
         # Obtain data set description
         self.description = string(year_dict[2015].iloc[:3, 1].str.cat(sep='\n')).translate()
@@ -182,6 +191,39 @@ class INECDataSet:
         self.df['region'] = self.df['region'].apply(lambda x: x.lstrip())  # Kill extra space in region
         self.df['region'][self.df['region'] == 'Huetar Caribe'] = 'Huetar Atlántica'  # Correct old region name
 
+    def process_edu_lvl(self, dataset_path_list):
+        """
+        Load and process the list of education level data set, and save in self.df
+        :param dataset_path_list: List of path to every education level data set
+        :type dataset_path: list of str
+        """
+        year_dict = dict()
+        assert all([os.path.exists(dataset_path) for dataset_path in dataset_path_list])
+        for file_path, year in zip(dataset_path_list[:-2], range(2010, 2016)):
+            year_dict[year] = pd.read_excel(file_path)
+        year_dict[2016] = pd.read_excel(pd.ExcelFile(dataset_path_list[-2]), 1)  # Read in corresponding table
+        year_dict[2017] = pd.read_excel(pd.ExcelFile(dataset_path_list[-1]), 'Cuadro 1')
+        # Obtain data set description
+        self.description = string(year_dict[2015].iloc[:3, 1].str.cat(sep='\n')).translate()
+        # Append each of the processed year DataFrame
+        self.df = pd.DataFrame()
+        for year, year_df in year_dict.items():
+            year_df = year_df.drop('Unnamed: 0', axis=1).dropna()
+            year_df = year_df.rename(
+                dict(zip(list(year_df.columns), EDU_LVL_COLS)), axis=1)
+            # Add informational columns
+            year_df['year'] = year
+            year_df['male'] = (year_df['region'] == 'Hombres').astype(int)
+            year_df['total'] = ((year_df['region'] != 'Hombres') & (year_df['region'] != 'Mujeres')).astype(int)
+            for index, item in year_df['region'].iteritems():
+                if item == 'Hombres':
+                    year_df.loc[index, 'region'] = year_df['region'][index - 1]
+                elif item == 'Mujeres':
+                    year_df.loc[index, 'region'] = year_df['region'][index - 2]
+            year_df = year_df.dropna()
+            self.df = self.df.append(year_df)
+        self.df = self.df.reset_index(drop=True)
+        
     def get_dataset_description(self):
         """Returns data set description for the instance data set"""
         return self.description
