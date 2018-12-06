@@ -132,11 +132,10 @@ class INECDataSet:
         assert os.path.exists(dataset_path), '{dataset_path} does not exist!'
         self.df = pd.read_excel(dataset_path).rename(HOUSEHOLD_CHAR_COLS, axis=1)  # Read xls data set and rename cols
         self.description = string(self.df['Category'][1:7].str.cat(sep='\n')).translate()
-
         # Drop Detaset description
         self.df = self.df.drop('Unnamed: 0', axis=1).dropna(subset=['Category'])[6:]
         # Clean inconsistent region naming
-        self.df['Category'][self.df['Category'] == 'Huetar Caribe'] = 'Huetar Atlántica'
+        self.df.loc[self.df.Category == 'Huetar Caribe', 'Category'] = 'Huetar Atlántica'
         # Separate years
         year_dict = self.slice_years_to_dict(self.df, 'Category', 2010, 2017)
         print('Processing... Please wait...')
@@ -150,8 +149,8 @@ class INECDataSet:
                     self.category_translation[entry] = string(
                         ''.join([i for i in str(entry) if
                                  not (i.isdigit() or i == '/')])).translate()  # Get rid of numbers and /
-            year_df['Category'] = year_df['Category'].apply(lambda x: self.category_translation[x])
-            year_df['year'] = year
+            year_df.loc[:, 'Category'] = year_df.loc[:, 'Category'].apply(lambda x: self.category_translation[x])
+            year_df.loc[:, 'year'] = year
             self.df = self.df.append(year_df)
         self.df = self.df.reset_index(drop=True)
 
@@ -185,11 +184,11 @@ class INECDataSet:
             year_df = year_df.drop('Unnamed: 0', axis=1).dropna()
             year_df = year_df.rename(
                 dict(zip(list(year_df.columns), EDU_COLS)), axis=1)
-            year_df['year'] = year
+            year_df.loc[:, 'year'] = year
             self.df = self.df.append(year_df)
         self.df = self.df.reset_index(drop=True)
         self.df['region'] = self.df['region'].apply(lambda x: x.lstrip())  # Kill extra space in region
-        self.df['region'][self.df['region'] == 'Huetar Caribe'] = 'Huetar Atlántica'  # Correct old region name
+        self.df.loc[self.df.region == 'Huetar Caribe', 'region'] = 'Huetar Atlántica'  # Correct old region name
 
     def process_edu_lvl(self, dataset_path_list):
         """
@@ -223,7 +222,8 @@ class INECDataSet:
             year_df = year_df.dropna()
             self.df = self.df.append(year_df)
         self.df = self.df.reset_index(drop=True)
-        
+        self.df.loc[self.df.region == 'Huetar Caribe', 'region'] = 'Huetar Atlántica'  # Correct old region name
+
     def get_dataset_description(self):
         """Returns data set description for the instance data set"""
         return self.description
