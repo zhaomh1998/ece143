@@ -3,7 +3,6 @@ import csv
 from Data_scraping import *
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 import matplotlib.pyplot as plt
-% matplotlib inline
 from skimage.transform import resize
 import warnings
 from imageio import imread as imr
@@ -138,7 +137,8 @@ def file_info(fname):
     return lines,words,characters
 
 def makeImage(text,name,mask):
-    
+    '''THis function creates a word cloud for the given text and mask and stores it in name file
+    '''
     wc = WordCloud(background_color="white", max_words=1000, mask=mask2)
     # generate word cloud
     wc.generate(text)
@@ -148,7 +148,9 @@ def makeImage(text,name,mask):
     plt.axis("off")
     plt.show()
 def create_mask(im_name):
-    '''This function creates a mask for creating wordcloud
+    '''This function creates a mask for creating wordcloud for im_name
+    input:
+    im_name--> Jpeg file format image (string)
     '''
     mask2=imr(im_name)
     mask2=rgb2gray(mask2)
@@ -162,8 +164,8 @@ def makeImage_freq(text,name):
     assert isinstance(text,dict)
     mask2=imr('costa_rica.jpg')
     mask2=rgb2gray(mask2)
-    mask2[mask2>250]=255
-    mask2[mask2<250]=0
+    mask2[mask2>254]=255
+    mask2[mask2<254]=0
     mask2=resize(mask2,(1200,1200))
     wc = WordCloud(background_color="white", max_words=1000, mask=mask2)
     # generate word cloud
@@ -189,12 +191,12 @@ def translate_file(fname):
             text=file.read(19000)
             text=translate_client.translate(text,target_language='en')
             fileT.write(text['translatedText'])
-
-data1=cleaned_up_text('translated_Laura_ch_tweets.txt','Laura_Ch')
-data2=cleaned_up_text('translated_CarlosAlvQ_tweets.txt','CarlosAlvQ')
-data3=cleaned_up_text('translated_luisguillermosr_tweets.txt','luisguillermosr')
-wordcloud1 = WordCloud(max_words=35628500,mask=mask2,background_color='white').generate(data1)
-wordcloud3 = WordCloud(max_words=356285,mask=mask2,background_color='white').generate(data3)
-diff=find_diff(wordcloud1,wordcloud3)
-makeImage_freq(dict(diff[0:60]),"luisguiller")
-makeImage_freq(dict(diff[-60:]),"laura_ch")
+if __name__ == '__main__':
+    data1=cleaned_up_text('translated_Laura_ch_tweets.txt','Laura_Ch')
+    data2=cleaned_up_text('translated_CarlosAlvQ_tweets.txt','CarlosAlvQ')
+    data3=cleaned_up_text('translated_luisguillermosr_tweets.txt','luisguillermosr')
+    wordcloud1 = WordCloud(max_words=35628500,mask=mask2,background_color='white').generate(data1)
+    wordcloud3 = WordCloud(max_words=35628500,mask=mask2,background_color='white').generate(data3)
+    diff=find_diff(wordcloud1,wordcloud3)
+    makeImage_freq(dict(diff[0:60]),"luisguiller")
+    makeImage_freq(dict(diff[-60:]),"laura_ch")

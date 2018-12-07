@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from collections import Counter
 import articleDateExtractor as ad
 import bs4
-
+from Twitter_data import *
 class string(str):
     def translate(self):
         '''This method translation to the default string objects in python
@@ -33,8 +33,6 @@ def web_search(Topic,word,n):
     output=Counter()
     for j in search(Topic, tld="com", num=n, stop=1, pause=2): 
         for k in word:
-            print(j)
-            print("article_date",ad.extractArticlePublishedDate(j))
             output[k]+=count_words(j,k)
     return output
 
@@ -93,13 +91,39 @@ def data_from_html(url):
     texts = soup.findAll(text=True)
     visible_texts = filter(visible, texts)  
     return u" ".join(t.strip() for t in visible_texts)
-
-
+             
+    
 def article_year(url):
     '''This function provides the year the article on the given url was published, it returns none if it is not an article
     '''
-    assert isinstance(url,str),"url is not in string format
+    assert isinstance(url,str),"url is not in string format"
     try:
         return ad.extractArticlePublishedDate(url).year
     except:
-        return None
+        return False
+
+def form_url_twitter(user, since, until):
+    '''
+    This function creates a link to be searched for twitter data for the given time period (custom search)
+    input:
+    user--> username of the user to be searched in string format
+    since--> start of tweet time in string format e.g. '2018-1-1' YYYY-MM-DD
+    until--> end of tweet time in string format e.g. '2018-11-7' YYYY-MM-DD
+    output:
+    web link to be searched for twitter data    
+    '''
+    assert isinstance(user, str) & isinstance(since,str) & isinstance(until,str),"input is not as expected"
+    p1 = 'https://twitter.com/search?f=tweets&vertical=default&q=from%3A'
+    p2 =  user + '%20since%3A' + since + '%20until%3A' + until + 'include%3Aretweets&src=typd'
+    return p1 + p2
+import sys
+if __name__ == '__main__':
+    '''This function returns the web search info for the given topic
+    input:
+    names--> names to be searched (argument 2)
+    Topic-->topic to be searched (argument 1)
+    '''
+    names=sys.argv[2]
+    Topic=sys.argv[1]
+    data=web_search(Topic,names,20)
+    
