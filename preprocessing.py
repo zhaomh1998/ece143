@@ -2,12 +2,14 @@ import os
 import pandas as pd
 from Data_scraping import *
 
-# INEC Data set constants
 DATA_SET_FOLDER = os.getcwd() + '/datasets/'
-DATA_SET_PATHS = {'household_characteristics': DATA_SET_FOLDER + 'household_characteristics_2010_2017.xls',
-                  'poverty_level_stat': DATA_SET_FOLDER + 'poverty_level_by_zone_2010_2017.xls',
-                  'edu': [DATA_SET_FOLDER + 'edu_' + str(year) + '.xlsx' for year in range(2010, 2018)],
-                  'edu_lvl': [DATA_SET_FOLDER + 'edu_lvl_' + str(year) + '.xlsx' for year in range(2010, 2018)]}
+KAGGLE_DATA_SET_PATHS = {'train': DATA_SET_FOLDER + 'train.csv',
+                         'test': DATA_SET_FOLDER + 'test.csv'}
+
+INEC_DATA_SET_PATHS = {'household_characteristics': DATA_SET_FOLDER + 'household_characteristics_2010_2017.xls',
+                       'poverty_level_stat': DATA_SET_FOLDER + 'poverty_level_by_zone_2010_2017.xls',
+                       'edu': [DATA_SET_FOLDER + 'edu_' + str(year) + '.xlsx' for year in range(2010, 2018)],
+                       'edu_lvl': [DATA_SET_FOLDER + 'edu_lvl_' + str(year) + '.xlsx' for year in range(2010, 2018)]}
 
 HOUSEHOLD_CHAR_COLS = {'Cuadro 2': 'Category', 'Unnamed: 2': 'Total', 'Unnamed: 3': 'Quintil 1',
                        'Unnamed: 4': 'Quintil 2', 'Unnamed: 5': 'Quintil 3', 'Unnamed: 6': 'Quintil 4',
@@ -38,63 +40,74 @@ def load_csv(data_path):
     return pd.read_csv(data_path)
 
 
-def clean_data(original_data):
-    """
-    Filter out unwanted and invalid data from the data set
-    :param DataFrame original_data: Original DataFrame read from data csv
-    :return: Filtered pandas DataFrame
-    """
-    assert isinstance(original_data, pd.DataFrame)
-    filtered_data = original_data.copy()
-    filtered_data.drop(['v18q1'], axis=1, inplace=True)
-    # TODO: Add other filtering
-    return filtered_data
+class KaggleSet:
+    """Class for all https://www.kaggle.com/c/costa-rican-household-poverty-prediction/data
+    related data sets processing"""
 
+    def __init__(self, dataset):
+        """Initialize with loading the data set
+        :param dataset: Name of the data set
+        :type dataset: str
+        """
+        assert isinstance(dataset, str)
+        assert dataset in KAGGLE_DATA_SET_PATHS.keys(), f'Please choose from {DATA_SET_PATHS.keys()}'
 
-def read_var(fname='variable.txt'):
-    """This function reads the variable description from the given text file for our dataset. The text in the file
-    should have the first word as the variable name and the following words as the description of the variable.
-    input:
-    fname-->file name
-    output:
-    variable description as a dictionary
-    """
-    feature = {}
-    assert isinstance(fname, str), "The given file name is not a string"
-    with open(fname, "r") as file:
-        for data in file.read().splitlines():
-            variable = data.split()[0].replace(",", "")
-            feature[variable] = ' '.join(data.split()[1:])
-    return feature
+        print(f'Start to load {dataset}...')
+        if dataset == 'train':
+            self.hasTarget = True
+            self.df = self.clean_data(load_csv(KAGGLE_DATA_SET_PATHS['train']))
+        elif dataset == 'test':
+            self.hasTarget = False
+            self.df = self.clean_data(load_csv(KAGGLE_DATA_SET_PATHS['test']))
+        print(f'{dataset} loaded.')
 
+    @staticmethod
+    def clean_data(original_data):
+        """
+        Filter out unwanted and invalid data from the data set
+        :param DataFrame original_data: Original DataFrame read from data csv
+        :return: Filtered pandas DataFrame
+        """
+        assert isinstance(original_data, pd.DataFrame)
+        filtered_data = original_data.copy()
+        filtered_data.drop(['v18q1'], axis=1, inplace=True)
+        # TODO: Add other filtering
+        return filtered_data
 
-def data_descrip(data):
-    """
-    This function gives the column descriptions of the training data given
-    input:
-    data--> data as panda DataFrame
-    output:
-    data key description
-    """
-    assert isinstance(data, pd.core.series.Series), "the data is not in pandas dataframe format"
-    feature = read_var("variable.txt")
-    return feature[data.name]
+    @staticmethod
+    def read_var(fname='variable.txt'):
+        """This function reads the variable description from the given text file for our dataset. The text in the file
+        should have the first word as the variable name and the following words as the description of the variable.
+        input:
+        fname-->file name
+        output:
+        variable description as a dictionary
+        """
+        feature = {}
+        assert isinstance(fname, str), "The given file name is not a string"
+        with open(fname, "r") as file:
+            for data in file.read().splitlines():
+                variable = data.split()[0].replace(",", "")
+                feature[variable] = ' '.join(data.split()[1:])
+        return feature
 
+    @staticmethod
+    def data_descrip(data):
+        """
+        This function gives the column descriptions of the training data given
+        input:
+        data--> data as panda DataFrame
+        output:
+        data key description
+        """
+        assert isinstance(data, pd.core.series.Series), "the data is not in pandas dataframe format"
+        feature = KaggleSet.read_var("variable.txt")
+        return feature[data.name]
 
-def get_training_set():
-    """
-    Load training.csv and clean it
-    :return: Cleaned train.csv pandas DataFrame
-    """
-    return clean_data(load_csv(os.getcwd() + '/datasets/train.csv'))
-
-
-def get_test_set():
-    """
-    Load test.csv and clean it
-    :return: Cleaned train.csv pandas DataFrame
-    """
-    return clean_data(load_csv(os.getcwd() + '/datasets/test.csv'))
+    def get_dataset(self):
+        """Returns DataFrame from this instance"""
+        assert self.df is not None
+        return self.df
 
 
 class INECDataSet:
@@ -102,25 +115,25 @@ class INECDataSet:
 
     def __init__(self, dataset):
         """
+        Initialize with loading the data set
         :param dataset: Name of the data set
         :type dataset: str
-        :return: Instance of INECDataSet
         """
         assert isinstance(dataset, str)
-        assert dataset in DATA_SET_PATHS.keys(), 'Please choose from {DATA_SET_PATHS.keys()}'
+        assert dataset in INEC_DATA_SET_PATHS.keys(), f'Please choose from {DATA_SET_PATHS.keys()}'
 
         self.df = None
         self.description = None
         self.category_translation = dict()
-        print('Start to load data...')
+        print(f'Start to load {dataset}...')
         if dataset == 'household_characteristics':
-            self.process_household_characteristics(DATA_SET_PATHS['household_characteristics'])
+            self.process_household_characteristics(INEC_DATA_SET_PATHS['household_characteristics'])
         elif dataset == 'poverty_level_stat':
-            self.process_poverty_level(DATA_SET_PATHS['poverty_level_stat'])
+            self.process_poverty_level(INEC_DATA_SET_PATHS['poverty_level_stat'])
         elif dataset == 'edu':
-            self.process_edu(DATA_SET_PATHS['edu'])
+            self.process_edu(INEC_DATA_SET_PATHS['edu'])
         elif dataset == 'edu_lvl':
-            self.process_edu_lvl(DATA_SET_PATHS['edu_lvl'])
+            self.process_edu_lvl(INEC_DATA_SET_PATHS['edu_lvl'])
 
     def process_household_characteristics(self, dataset_path):
         """
