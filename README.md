@@ -20,14 +20,14 @@ pyenchant <br/>
 
 ## Note: We're not providing our api_keys for twitter, Google and Mapbox. Kindly generate your own keys for this.
 
-## INTRODUCTION:
+## INTRODUCTION TO COSTA RICA:
 - Population: 4,857,274 people
 
 - Density: 84/km2  
 
 - Poverty index: 21.1% in 2018 (1,142,069 people in poverty, while 360,783 people live in extreme poverty.)
 
-## Motivation
+## MOTIVATION
 
 - The big poverty gap in Costa Rica is a serious problem as 1.1 million people live in poverty.
 
@@ -35,7 +35,7 @@ pyenchant <br/>
 
 - Understanding the indicators and the factors affecting poverty will help us in tackling this problem in a better way.
 
-## Datasets
+## DATASETS
 
 - IDB Costa Rican Household Dataset: 143 features as poverty level indicators with target labels classified
 
@@ -43,11 +43,11 @@ pyenchant <br/>
 
 - Google and twitter search data
 
-## Results
+## RESULTS
 
 Please see the Final_Plots.ipynb for final results
 
-## Conclusions
+## CONCLUSIONS
 
 - We can conclude that the government has a big role to play to overcome poverty in Costa Rica.
 - New Industries needs to be setup to increase per capita income
