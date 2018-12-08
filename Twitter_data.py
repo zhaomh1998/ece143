@@ -125,6 +125,9 @@ def find_diff(wordcloud,wordcloud3):
     return diff
 
 def file_info(fname):
+    '''This function provides length of characters, word and lines in a file
+    input--> file name
+    '''
     with open(fname) as infile:
         lines=0
         words=0
@@ -160,6 +163,7 @@ def create_mask(im_name):
     return mask2
 def makeImage_freq(text,name):
     '''
+    This function creates a word cloud image for the given text dictionary
     '''
     assert isinstance(text,dict)
     mask2=imr('costa_rica.jpg')
@@ -181,6 +185,8 @@ import time
 # Instantiates a client
 
 def translate_file(fname):
+    '''This function translates a given file in any language to english
+    '''
     translate_client = translate.Client()
     avg=os.path.getsize(fname)
     n=avg//19000
