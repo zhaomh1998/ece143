@@ -5,7 +5,7 @@
 
 Required Python Libraries: <br/>
 google <br/>
-seaborn <br/>
+seaborn  (Install latest version of seaborn 0.9.0) <br/>
 googletrans (install googletrans from source files or use conda install, there is a problem with the pip installation) <br/>
 beautifulsoup4 <br/>
 requests <br/>
@@ -17,6 +17,8 @@ wordcloud <br/>
 google-cloud-translate <br/>
 shapely <br/>
 pyenchant <br/>
+gmaps <br/>
+plotly
 
 ## Note: We're not providing our api_keys for twitter, Google and Mapbox. Kindly generate your own keys for this.
 
