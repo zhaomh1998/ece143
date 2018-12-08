@@ -25,7 +25,7 @@ pyenchant <br/>
 
 - Density: 84/km2  
 
-- Poverty index: 21.1% in 2018(1,142,069 people in poverty, while 360,783 people live in extreme poverty.)
+- Poverty index: 21.1% in 2018 (1,142,069 people in poverty, while 360,783 people live in extreme poverty.)
 
 ## Motivation
 
@@ -37,8 +37,10 @@ pyenchant <br/>
 
 ## Datasets
 
-- IDB Costa Rican Household Dataset: 143 features as poverty level indicators with target labels classified
-- INEC Costa Rica Dataset: Costa Rican official census data 
+- IDB Costa Rican Household Dataset: 143 features as poverty level indicators with target labels classified
+
+- INEC Costa Rica Dataset: Costa Rican official census data
+
 - Google and twitter search data
 
 ## Results
